@@ -124,6 +124,7 @@ public class DyeableWaterItemListener implements Listener {
                                             e.remove();
                                         }
                                     }
+                                    item.remove();
                                     // start bubble particles
                                     int task = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
                                         location.getWorld().spawnParticle(Particle.WATER_SPLASH, particles, 5);
