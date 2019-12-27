@@ -71,7 +71,7 @@ public class DyeableWaterListener implements Listener {
                             return;
                         }
                         // dye the water
-                        int key = getKey(is.getType(), cauldron.getLevel());
+                        int key = DyeableWaterUtilities.getKey(is.getType(), cauldron.getLevel());
                         if (key != 0) {
                             BlockData stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(key));
                             block.setBlockData(stem);
@@ -89,12 +89,16 @@ public class DyeableWaterListener implements Listener {
                             if (is.getType().equals(Material.WATER_BUCKET)) {
                                 // fill to level 3
                                 stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 3));
+                                // change the water bucket to an empty bucket
+                                ItemStack bucket = new ItemStack(Material.BUCKET);
+                                player.getInventory().setItemInMainHand(bucket);
+                                player.updateInventory();
                             } else if (is.getType().equals(Material.POTION) && cauldron.getLevel() == 0) {
                                 // fill to level 1
                                 stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 1));
                                 sound = Sound.ITEM_BOTTLE_EMPTY;
                             }
-                            if (stem != null ) {
+                            if (stem != null) {
                                 player.playSound(player.getLocation(), sound, 1.0F, 1.0F);
                                 BlockData finalStem = stem;
                                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
@@ -112,13 +116,9 @@ public class DyeableWaterListener implements Listener {
                     int currentLevel = model % 10;
                     int base = model - currentLevel;
                     if (armour.contains(is.getType())) {
-                        if (model != null) {
-                            if (is.getType().equals(Material.WATER_BUCKET)) {
-                                event.setCancelled(true);
-                                return;
-                            }
+                        if (model != null && model != 999) {
                             BlockData stem;
-                            Color color = getColor(base);
+                            Color color = DyeableWaterUtilities.getColor(base);
                             if (color != null) {
                                 player.playSound(player.getLocation(), "cauldron.dye", 1.0F, 1.0F);
                                 // dye the armour
@@ -136,7 +136,7 @@ public class DyeableWaterListener implements Listener {
                                 block.setBlockData(stem);
                             }
                         }
-                    } else if (is.getType().equals(Material.GLASS_BOTTLE)) {
+                    } else if (is.getType().equals(Material.GLASS_BOTTLE) && model != 999) {
                         BlockData stem;
                         // reduce cauldron level by one
                         if (currentLevel - 1 > 0) {
@@ -151,7 +151,7 @@ public class DyeableWaterListener implements Listener {
                         player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_FILL, 1.0F, 1.0F);
                         ItemStack potion = new ItemStack(Material.POTION);
                         ItemMeta potionMeta = potion.getItemMeta();
-                        potionMeta.setDisplayName(getColorName(base) + " Dyed Water");
+                        potionMeta.setDisplayName(DyeableWaterUtilities.getColorName(base) + " Dyed Water");
                         potionMeta.setCustomModelData(10000000 + base);
                         potionMeta.addItemFlags(ItemFlag.values());
                         potion.setItemMeta(potionMeta);
@@ -163,19 +163,24 @@ public class DyeableWaterListener implements Listener {
                             player.getInventory().setItemInMainHand(potion);
                         }
                         player.updateInventory();
-                    } else if (is.getType().equals(Material.BUCKET) && currentLevel == 3) {
+                    } else if (is.getType().equals(Material.BUCKET) && (currentLevel == 3 || model == 999)) {
                         // revert to an empty cauldron
                         BlockData cauldronBlockData = Material.CAULDRON.createBlockData();
                         block.setBlockData(cauldronBlockData);
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                             player.playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL, 1.0F, 1.0F);
-                            // change the bucket to a dyed water bucket
-                            ItemStack waterBucket = new ItemStack(Material.WATER_BUCKET);
-                            ItemMeta bucketMeta = waterBucket.getItemMeta();
-                            bucketMeta.setDisplayName(getColorName(base) + " Dyed Water Bucket");
-                            bucketMeta.setCustomModelData(10000000 + base);
-                            waterBucket.setItemMeta(bucketMeta);
-                            player.getInventory().setItemInMainHand(waterBucket);
+                            // change the bucket to a dyed water bucket / lava bucket
+                            ItemStack filledBucket;
+                            if (model == 999) {
+                                filledBucket = new ItemStack(Material.LAVA_BUCKET);
+                            } else {
+                                filledBucket = new ItemStack(Material.WATER_BUCKET);
+                                ItemMeta bucketMeta = filledBucket.getItemMeta();
+                                bucketMeta.setDisplayName(DyeableWaterUtilities.getColorName(base) + " Dyed Water Bucket");
+                                bucketMeta.setCustomModelData(10000000 + base);
+                                filledBucket.setItemMeta(bucketMeta);
+                            }
+                            player.getInventory().setItemInMainHand(filledBucket);
                             player.updateInventory();
                         }, 2L);
                     } else if (is.getType().equals(Material.POTION) && is.hasItemMeta() && currentLevel < 3) {
@@ -195,120 +200,5 @@ public class DyeableWaterListener implements Listener {
                 }
             }
         }
-    }
-
-    private int getKey(Material material, int level) {
-        switch (material) {
-            case WHITE_DYE:
-                return level;
-            case ORANGE_DYE:
-                return 10 + level;
-            case MAGENTA_DYE:
-                return 20 + level;
-            case YELLOW_DYE:
-                return 30 + level;
-            case LIGHT_BLUE_DYE:
-                return 40 + level;
-            case LIME_DYE:
-                return 50 + level;
-            case PINK_DYE:
-                return 60 + level;
-            case GRAY_DYE:
-                return 70 + level;
-            case LIGHT_GRAY_DYE:
-                return 80 + level;
-            case CYAN_DYE:
-                return 90 + level;
-            case PURPLE_DYE:
-                return 100 + level;
-            case BLUE_DYE:
-                return 110 + level;
-            case BROWN_DYE:
-                return 120 + level;
-            case GREEN_DYE:
-                return 130 + level;
-            case RED_DYE:
-                return 140 + level;
-            case BLACK_DYE:
-                return 150 + level;
-            default:
-                return 0;
-        }
-    }
-
-    private Color getColor(int i) {
-        switch (i) {
-            case 0:
-                return Color.WHITE;
-            case 10:
-                return Color.ORANGE;
-            case 20:
-                return Color.MAROON;
-            case 30:
-                return Color.YELLOW;
-            case 40:
-                return Color.AQUA;
-            case 50:
-                return Color.LIME;
-            case 60:
-                return Color.FUCHSIA;
-            case 70:
-                return Color.GRAY;
-            case 80:
-                return Color.SILVER;
-            case 90:
-                return Color.TEAL;
-            case 100:
-                return Color.PURPLE;
-            case 110:
-                return Color.BLUE;
-            case 120:
-                return Color.OLIVE;
-            case 130:
-                return Color.GREEN;
-            case 140:
-                return Color.RED;
-            case 150:
-                return Color.BLACK;
-        }
-        return null;
-    }
-
-    private String getColorName(int i) {
-        switch (i) {
-            case 0:
-                return "White";
-            case 10:
-                return "Orange";
-            case 20:
-                return "Magenta";
-            case 30:
-                return "Yellow";
-            case 40:
-                return "Light Blue";
-            case 50:
-                return "Lime";
-            case 60:
-                return "Pink";
-            case 70:
-                return "Gray";
-            case 80:
-                return "Lihgt Gray";
-            case 90:
-                return "Cyan";
-            case 100:
-                return "Purple";
-            case 110:
-                return "Blue";
-            case 120:
-                return "Brown";
-            case 130:
-                return "Green";
-            case 140:
-                return "Red";
-            case 150:
-                return "Black";
-        }
-        return "";
     }
 }

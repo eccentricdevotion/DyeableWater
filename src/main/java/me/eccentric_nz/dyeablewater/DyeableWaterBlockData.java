@@ -102,6 +102,8 @@ public class DyeableWaterBlockData {
             put(152, "minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=false]");
             // black water level 3
             put(153, "minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=true]");
+            // lava level 3
+            put(999, "minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=true,west=false]");
         }
     };
 
@@ -203,6 +205,8 @@ public class DyeableWaterBlockData {
             put("minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=false]", 152);
             // black water level 3
             put("minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=true]", 153);
+            // lava level 3
+            put("minecraft:mushroom_stem[down=true,east=true,north=false,south=false,up=true,west=false]", 999);
         }
     };
 }
