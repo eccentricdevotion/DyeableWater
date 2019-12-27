@@ -32,16 +32,18 @@ public class DyeableWaterBucketListener implements Listener {
         }
         if (block.getType().equals(Material.CAULDRON) && event.getBucket().equals(Material.LAVA_BUCKET)) {
             Player player = event.getPlayer();
-            event.setCancelled(true);
-            player.playSound(player.getLocation(), Sound.ITEM_BUCKET_EMPTY_LAVA, 1.0F, 1.0F);
-            // change the lava bucket to an empty bucket
-            ItemStack bucket = new ItemStack(Material.BUCKET);
-            player.getInventory().setItemInMainHand(bucket);
-            player.updateInventory();
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                BlockData lava = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(999));
-                block.setBlockData(lava);
-            }, 2L);
+            if (player.hasPermission("dyeablewater.lava")) {
+                event.setCancelled(true);
+                player.playSound(player.getLocation(), Sound.ITEM_BUCKET_EMPTY_LAVA, 1.0F, 1.0F);
+                // change the lava bucket to an empty bucket
+                ItemStack bucket = new ItemStack(Material.BUCKET);
+                player.getInventory().setItemInMainHand(bucket);
+                player.updateInventory();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    BlockData lava = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(999));
+                    block.setBlockData(lava);
+                }, 2L);
+            }
         }
     }
 }

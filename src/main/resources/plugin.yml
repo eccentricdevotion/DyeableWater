@@ -9,3 +9,9 @@ permissions:
   dyeablewater.use:
     description: Allow a player to dye water in a cauldron.
     default: op
+  dyeablewater.lava:
+    description: Allow a player to place lava in a cauldron and destroy items thrown into it.
+    default: op
+  dyeablewater.brew:
+    description: Allow a player to brew potions in a cauldron.
+    default: op

@@ -14,5 +14,7 @@ public class DyeableWater extends JavaPlugin {
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new DyeableWaterListener(this), this);
+        pm.registerEvents(new DyeableWaterBucketListener(this), this);
+        pm.registerEvents(new DyeableWaterItemListener(this), this);
     }
 }
