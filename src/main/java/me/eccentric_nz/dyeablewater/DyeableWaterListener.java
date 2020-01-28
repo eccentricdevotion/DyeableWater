@@ -53,7 +53,10 @@ public class DyeableWaterListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (player.hasPermission("dyeablewater.use") && event.getHand().equals(EquipmentSlot.HAND)) {
+        if (player == null) {
+            return;
+        }
+        if (player.hasPermission("dyeablewater.use") && event.getHand() != null && event.getHand().equals(EquipmentSlot.HAND)) {
             Block block = event.getClickedBlock();
             if (block == null) {
                 return;
