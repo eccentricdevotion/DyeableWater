@@ -16,5 +16,6 @@ public class DyeableWater extends JavaPlugin {
         pm.registerEvents(new DyeableWaterListener(this), this);
         pm.registerEvents(new DyeableWaterBucketListener(this), this);
         pm.registerEvents(new DyeableWaterItemListener(this), this);
+        pm.registerEvents(new DyeableWaterBlockBreakListener(), this);
     }
 }
