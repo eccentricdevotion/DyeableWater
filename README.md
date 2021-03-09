@@ -1,6 +1,10 @@
 # DyeableWater
 
- Spigot plugin to add dyeable water in cauldrons
+ Spigot plugin to:
+ 
+ * Add dyeable water in cauldrons
+ * Create lava cauldrons
+ * Brew potions in cauldrons
  
 [![Dyeable Water](https://i.ibb.co/2N9yj17/https-i-ytimg-com-vi-RYQGkl-Qz-Kjc-maxresdefault.jpg)](https://youtu.be/RYQGklQzKjc "Dyeable Water")
 
