@@ -1,6 +1,7 @@
 package me.eccentric_nz.dyeablewater;
 
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -160,7 +161,13 @@ public class DyeableWaterListener implements Listener {
                         potion.setItemMeta(potionMeta);
                         // remove a glass bottle
                         if (is.getAmount() > 1) {
-                            player.getInventory().addItem(potion);
+                            int empty = player.getInventory().firstEmpty();
+                            if (empty != -1) {
+                                player.getInventory().setItem(empty, potion);
+                            } else {
+                                Location location = player.getLocation();
+                                location.getWorld().dropItem(location, potion);
+                            }
                             is.setAmount(is.getAmount() - 1);
                         } else {
                             player.getInventory().setItemInMainHand(potion);
@@ -183,7 +190,20 @@ public class DyeableWaterListener implements Listener {
                                 bucketMeta.setCustomModelData(10000000 + base);
                                 filledBucket.setItemMeta(bucketMeta);
                             }
-                            player.getInventory().setItemInMainHand(filledBucket);
+                            // check for stacked buckets
+                            if (is.getAmount() > 1) {
+                                // put filled bucket in inventory
+                                int empty = player.getInventory().firstEmpty();
+                                if (empty != -1) {
+                                    player.getInventory().setItem(empty, filledBucket);
+                                } else {
+                                    Location location = player.getLocation();
+                                    location.getWorld().dropItem(location, filledBucket);
+                                }
+                                is.setAmount(is.getAmount() - 1);
+                            } else {
+                                player.getInventory().setItemInMainHand(filledBucket);
+                            }
                             player.updateInventory();
                         }, 2L);
                     } else if (is.getType().equals(Material.POTION) && is.hasItemMeta() && currentLevel < 3) {
