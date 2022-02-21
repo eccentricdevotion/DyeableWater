@@ -101,7 +101,7 @@ public class DyeableWaterUtilities {
             case 70:
                 return "Gray";
             case 80:
-                return "Lihgt Gray";
+                return "Light Gray";
             case 90:
                 return "Cyan";
             case 100:
