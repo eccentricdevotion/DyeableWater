@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.eccentric_nz.dyeablewater</groupId>
     <artifactId>DyeableWater</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>DyeableWater</name>
     <repositories>
         <repository>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.16.5-R0.1-SNAPSHOT</version>
+            <version>1.18.1-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
