@@ -66,6 +66,42 @@ public class DyeableWaterListener implements Listener {
             ItemStack is = player.getInventory().getItemInMainHand();
             if (is != null) {
                 if (block.getType().equals(Material.CAULDRON)) {
+                    // Empty cauldron
+                    if (is.hasItemMeta()) {
+                        ItemMeta im = is.getItemMeta();
+                        if (im.hasCustomModelData()) {
+                            // get the model - could be 0 -> 150 in multiples of 10
+                            int model = im.getCustomModelData() - 10000000;
+                            BlockData stem = null;
+                            Sound sound = Sound.ITEM_BUCKET_EMPTY;
+                            if (is.getType().equals(Material.WATER_BUCKET)) {
+                                // fill to level 3
+                                stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 3));
+                                // change the water bucket to an empty bucket
+                                ItemStack bucket = new ItemStack(Material.BUCKET);
+                                player.getInventory().setItemInMainHand(bucket);
+                                player.updateInventory();
+                            } else if (is.getType().equals(Material.POTION)) {
+                                // fill to level 1
+                                stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 1));
+                                sound = Sound.ITEM_BOTTLE_EMPTY;
+                                // change the potion to an glass bottle
+                                ItemStack bottle = new ItemStack(Material.GLASS_BOTTLE);
+                                player.getInventory().setItemInMainHand(bottle);
+                                player.updateInventory();
+                            }
+                            if (stem != null) {
+                                player.playSound(player.getLocation(), sound, 1.0F, 1.0F);
+                                BlockData finalStem = stem;
+                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                                    block.setBlockData(finalStem);
+                                }, 2L);
+                            }
+                            return;
+                        }
+                    }
+                }
+                if (block.getType().equals(Material.WATER_CAULDRON)) {
                     // cauldron must have water in it
                     Levelled cauldron = (Levelled) block.getBlockData();
                     // DYE
@@ -97,10 +133,12 @@ public class DyeableWaterListener implements Listener {
                                 ItemStack bucket = new ItemStack(Material.BUCKET);
                                 player.getInventory().setItemInMainHand(bucket);
                                 player.updateInventory();
-                            } else if (is.getType().equals(Material.POTION) && cauldron.getLevel() == 0) {
-                                // fill to level 1
-                                stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 1));
-                                sound = Sound.ITEM_BOTTLE_EMPTY;
+                            } else if (is.getType().equals(Material.POTION)) {
+                                if (cauldron.getLevel() < 3) {
+                                    // fill to current level + 1
+                                    stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 1));
+                                    sound = Sound.ITEM_BOTTLE_EMPTY;
+                                }
                             }
                             if (stem != null) {
                                 player.playSound(player.getLocation(), sound, 1.0F, 1.0F);
@@ -150,29 +188,31 @@ public class DyeableWaterListener implements Listener {
                             // revert to an empty cauldron
                             stem = Material.CAULDRON.createBlockData();
                         }
-                        block.setBlockData(stem);
-                        // change the glass bottle to a dyed potion
-                        player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_FILL, 1.0F, 1.0F);
-                        ItemStack potion = new ItemStack(Material.POTION);
-                        ItemMeta potionMeta = potion.getItemMeta();
-                        potionMeta.setDisplayName(DyeableWaterUtilities.getColorName(base) + " Dyed Water");
-                        potionMeta.setCustomModelData(10000000 + base);
-                        potionMeta.addItemFlags(ItemFlag.values());
-                        potion.setItemMeta(potionMeta);
-                        // remove a glass bottle
-                        if (is.getAmount() > 1) {
-                            int empty = player.getInventory().firstEmpty();
-                            if (empty != -1) {
-                                player.getInventory().setItem(empty, potion);
+                        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                            block.setBlockData(stem);
+                            // change the glass bottle to a dyed potion
+                            player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_FILL, 1.0F, 1.0F);
+                            ItemStack potion = new ItemStack(Material.POTION);
+                            ItemMeta potionMeta = potion.getItemMeta();
+                            potionMeta.setDisplayName(DyeableWaterUtilities.getColorName(base) + " Dyed Water");
+                            potionMeta.setCustomModelData(10000000 + base);
+                            potionMeta.addItemFlags(ItemFlag.values());
+                            potion.setItemMeta(potionMeta);
+                            // remove a glass bottle
+                            if (is.getAmount() > 1) {
+                                int empty = player.getInventory().firstEmpty();
+                                if (empty != -1) {
+                                    player.getInventory().setItem(empty, potion);
+                                } else {
+                                    Location location = player.getLocation();
+                                    location.getWorld().dropItem(location, potion);
+                                }
+                                is.setAmount(is.getAmount() - 1);
                             } else {
-                                Location location = player.getLocation();
-                                location.getWorld().dropItem(location, potion);
+                                player.getInventory().setItemInMainHand(potion);
                             }
-                            is.setAmount(is.getAmount() - 1);
-                        } else {
-                            player.getInventory().setItemInMainHand(potion);
-                        }
-                        player.updateInventory();
+                            player.updateInventory();
+                        }, 2l);
                     } else if (is.getType().equals(Material.BUCKET) && (currentLevel == 3 || model == 999)) {
                         // revert to an empty cauldron
                         BlockData cauldronBlockData = Material.CAULDRON.createBlockData();
@@ -212,12 +252,14 @@ public class DyeableWaterListener implements Listener {
                         if (pim.hasCustomModelData() && pim.getCustomModelData() == (10000000 + base)) {
                             // add another water level
                             BlockData stem = plugin.getServer().createBlockData(DyeableWaterBlockData.MODEL_TO_DATA.get(model + 1));
-                            block.setBlockData(stem);
-                            // change the potion to a glass bottle
-                            ItemStack glassBottle = new ItemStack(Material.GLASS_BOTTLE);
-                            player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_EMPTY, 1.0F, 1.0F);
-                            player.getInventory().setItemInMainHand(glassBottle);
-                            player.updateInventory();
+                            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                                block.setBlockData(stem);
+                                // change the potion to a glass bottle
+                                ItemStack glassBottle = new ItemStack(Material.GLASS_BOTTLE);
+                                player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_EMPTY, 1.0F, 1.0F);
+                                player.getInventory().setItemInMainHand(glassBottle);
+                                player.updateInventory();
+                            }, 2L);
                         }
                     }
                 }
