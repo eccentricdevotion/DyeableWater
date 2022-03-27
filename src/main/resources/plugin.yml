@@ -3,7 +3,7 @@ description: Add the ability to dye water in cauldrons
 main: me.eccentric_nz.dyeablewater.DyeableWater
 name: DyeableWater
 load: POSTWORLD
-version: 1.0.7
+version: 1.0.8
 api-version: 1.18
 permissions:
   dyeablewater.use:

@@ -159,12 +159,17 @@ public class DyeableWaterListener implements Listener {
                     int base = model - currentLevel;
                     if (armour.contains(is.getType())) {
                         if (model != null && model != 999) {
+                            ItemMeta im = is.getItemMeta();
+                            if (im.hasCustomModelData() || !im.getPersistentDataContainer().isEmpty()) {
+                                // don't dye custom items
+                                return;
+                            }
                             BlockData stem;
                             Color color = DyeableWaterUtilities.getColor(base);
                             if (color != null) {
                                 player.playSound(player.getLocation(), "cauldron.dye", 1.0F, 1.0F);
                                 // dye the armour
-                                LeatherArmorMeta lam = (LeatherArmorMeta) is.getItemMeta();
+                                LeatherArmorMeta lam = (LeatherArmorMeta) im;
                                 lam.setColor(color);
                                 is.setItemMeta(lam);
                                 player.updateInventory();
